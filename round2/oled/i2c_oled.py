@@ -1,0 +1,185 @@
+import time
+from machine import I2C, Pin
+
+# Constants or Macros
+SET_CONTRAST        = const(0x81)
+SET_ENTIRE_ON       = const(0xa4)
+SET_NORM_INV        = const(0xa6)
+SET_DISP            = const(0xae)
+SET_MEM_ADDR        = const(0x20)
+SET_COL_ADDR        = const(0x21)
+SET_PAGE_ADDR       = const(0x22)
+SET_DISP_START_LINE = const(0x40)
+SET_SEG_REMAP       = const(0xa0)
+SET_MUX_RATIO       = const(0xa8)
+SET_COM_OUT_DIR     = const(0xc0)
+SET_DISP_OFFSET     = const(0xd3)
+SET_COM_PIN_CFG     = const(0xda)
+SET_DISP_CLK_DIV    = const(0xd5)
+SET_PRECHARGE       = const(0xd9)
+SET_VCOM_DESEL      = const(0xdb)
+SET_CHARGE_PUMP     = const(0x8d)
+
+# OLED dimensions
+WIDTH = 128
+HEIGHT = 64
+ADDR = 0x3c  # I2C address for SSD1306
+
+# Initialize I2C
+i2c = I2C(0, scl=Pin(5), sda=Pin(4))  # Default frequency of 400,000 Hz
+
+# Buffer for display (1 byte per 8 vertical pixels)
+buffer = bytearray((HEIGHT // 8) * WIDTH)
+
+# Function to send command to OLED
+def write_cmd(cmd):
+    temp = bytearray([0x80, cmd]) 
+    i2c.writeto(ADDR, temp)
+
+# Function to send data to OLED
+def write_data(data):
+    temp = bytearray([0x40, data]) 
+    i2c.writeto(ADDR, temp)
+
+# Function to initialize the OLED
+def init_display():
+    cmds = [
+        SET_DISP | 0x00,  # Display off
+        SET_MEM_ADDR, 0x00,  # Horizontal addressing mode
+        SET_DISP_START_LINE | 0x00,
+        SET_SEG_REMAP | 0x01,  # Column address 127 mapped to SEG0
+        SET_MUX_RATIO, HEIGHT - 1,
+        SET_COM_OUT_DIR | 0x08,  # Scan from COM[N] to COM0
+        SET_DISP_OFFSET, 0x00,
+        SET_COM_PIN_CFG, 0x12,
+        SET_DISP_CLK_DIV, 0x80,
+        SET_PRECHARGE, 0xf1,
+        SET_VCOM_DESEL, 0x30,  # 0.83*Vcc
+        SET_CONTRAST, 0xff,  # Maximum contrast
+        SET_ENTIRE_ON,  # Output follows RAM contents
+        SET_NORM_INV,  # Not inverted
+        SET_CHARGE_PUMP, 0x14,  # Enable charge pump
+        SET_DISP | 0x01  # Display on
+    ]
+    for cmd in cmds:
+        write_cmd(cmd)
+
+# Function to clear the display buffer
+def clear_display():
+    for i in range(len(buffer)):
+        buffer[i] = 0x00
+
+# Function to set a pixel in the buffer
+def set_pixel(x, y, color):
+    if y >= HEIGHT or x < 0 or y < 0:
+        return
+    if x >= WIDTH:
+        #x += 8
+        y += 8
+    page = y // 8
+    bit = y % 8
+    index = page * WIDTH + x
+    if color:
+        buffer[index] |= (1 << bit)
+    else:
+        buffer[index] &= ~(1 << bit)
+
+# Function to draw a character (simplified 5x8 font)
+def draw_char(x, y, char):
+    font = {
+    'A': [0x7C, 0x12, 0x12, 0x12, 0x7C],
+    'B': [0x7E, 0x4A, 0x4A, 0x4A, 0x34],
+    'C': [0x3C, 0x42, 0x42, 0x42, 0x24],
+    'D': [0x7E, 0x42, 0x42, 0x42, 0x3C],
+    'E': [0x7E, 0x4A, 0x4A, 0x42, 0x42],
+    'F': [0x7E, 0x0A, 0x0A, 0x0A, 0x02],
+    'G': [0x3C, 0x42, 0x4A, 0x4A, 0x38],
+    'H': [0x7E, 0x08, 0x08, 0x08, 0x7E],
+    'I': [0x00, 0x42, 0x7E, 0x42, 0x00],
+    'J': [0x20, 0x40, 0x40, 0x3E, 0x00],
+    'K': [0x7E, 0x08, 0x14, 0x22, 0x40],
+    'L': [0x7E, 0x40, 0x40, 0x40, 0x00],
+    'M': [0x7E, 0x02, 0x0C, 0x02, 0x7E],
+    'N': [0x7E, 0x04, 0x08, 0x10, 0x7E],
+    'O': [0x3C, 0x42, 0x42, 0x42, 0x3C],
+    'P': [0x7E, 0x0A, 0x0A, 0x0A, 0x04],
+    'Q': [0x3C, 0x42, 0x52, 0x22, 0x5C],
+    'R': [0x7E, 0x0A, 0x1A, 0x2A, 0x44],
+    'S': [0x24, 0x4A, 0x4A, 0x4A, 0x30],
+    'T': [0x02, 0x02, 0x7E, 0x02, 0x02],
+    'U': [0x3E, 0x40, 0x40, 0x40, 0x3E],
+    'V': [0x1E, 0x20, 0x40, 0x20, 0x1E],
+    'W': [0x7E, 0x20, 0x10, 0x20, 0x7E],
+    'X': [0x42, 0x24, 0x18, 0x24, 0x42],
+    'Y': [0x06, 0x08, 0x70, 0x08, 0x06],
+    'Z': [0x42, 0x62, 0x52, 0x4A, 0x46],
+
+    '0': [0x3C, 0x42, 0x42, 0x42, 0x3C],
+    '1': [0x00, 0x44, 0x7E, 0x40, 0x00],
+    '2': [0x64, 0x52, 0x52, 0x52, 0x4C],
+    '3': [0x24, 0x42, 0x4A, 0x4A, 0x34],
+    '4': [0x18, 0x14, 0x12, 0x7E, 0x10],
+    '5': [0x2E, 0x4A, 0x4A, 0x4A, 0x32],
+    '6': [0x3C, 0x4A, 0x4A, 0x4A, 0x30],
+    '7': [0x02, 0x02, 0x72, 0x0A, 0x06],
+    '8': [0x34, 0x4A, 0x4A, 0x4A, 0x34],
+    '9': [0x0C, 0x52, 0x52, 0x52, 0x3C],
+
+    ' ': [0x00, 0x00, 0x00, 0x00, 0x00],
+    '.': [0x00, 0x60, 0x60, 0x00, 0x00],
+    '!': [0x00, 0x7A, 0x00, 0x00, 0x00],
+    '?': [0x04, 0x02, 0x52, 0x0A, 0x04],
+    '-': [0x08, 0x08, 0x08, 0x08, 0x08],
+    '_': [0x40, 0x40, 0x40, 0x40, 0x40],
+
+    'g': [0x4C, 0x52, 0x52, 0x52, 0x3E],
+    'm': [0x7C, 0x04, 0x18, 0x04, 0x78],
+
+    ':': [0x00, 0x00, 0x12, 0x12, 0x00],
+
+    '(': [0x00, 0x38, 0x44, 0x82, 0x00],
+    'ಠ': [0x38, 0x44, 0xAA, 0x92, 0x38],  # Represents the 'ಠ' character
+    '益': [0x92, 0xFE, 0x38, 0xFE, 0x92],
+    'ಠ': [0x38, 0x44, 0xAA, 0x92, 0x38],  # Represents the 'ಠ' character
+    ')': [0x00, 0x82, 0x44, 0x38, 0x00],
+    '_': [0x00, 0x10, 0x10, 0x10, 0x00],  # Represents the underscore '_'
+    }
+
+    if char in font:
+        data = font[char]
+        for i in range(5):
+            byte = data[i]
+            for j in range(8):
+                set_pixel(x + i, y + j, (byte >> j) & 1)
+
+# Function to write "Hello World" on the display
+def write_on_disp(text):
+    #text = "WASHING MACHINE BROS. 2.0                                        WEIGHT:  5.0 gm "
+    x_offset = 0
+    for c in text:
+        draw_char(x_offset, 0, c)
+        x_offset += 6  # Move to next character position
+
+# Function to display the buffer on the OLED
+def show():
+    write_cmd(SET_COL_ADDR)
+    write_cmd(0)
+    write_cmd(WIDTH - 1)
+    write_cmd(SET_PAGE_ADDR)
+    write_cmd(0)
+    write_cmd((HEIGHT // 8) - 1)
+    for i in range(len(buffer)):
+        write_data(buffer[i])
+
+# Initialize display and clear it
+init_display()
+clear_display()
+
+# Write "Hello World" and show it
+write_on_disp("WASHING MACHINE BROS. 2.0                                        WEIGHT:  5.0 gm                              ಠ_ಠ")
+show()
+
+# Keep the program running
+'''while True:
+    time.sleep(1)
+'''
