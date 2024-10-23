@@ -171,6 +171,7 @@ def show():
     for i in range(len(buffer)):
         write_data(buffer[i])
 
+'''
 # Initialize display and clear it
 init_display()
 clear_display()
@@ -180,6 +181,6 @@ write_on_disp("WASHING MACHINE BROS. 2.0                                        
 show()
 
 # Keep the program running
-'''while True:
+while True:
     time.sleep(1)
 '''
