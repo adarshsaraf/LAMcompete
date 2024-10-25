@@ -6,7 +6,7 @@ frequency = 1000
 
 # Initialize pins for motor control
 pin1 = Pin(3, Pin.OUT)
-pin2 = Pin(4, Pin.OUT)
+pin2 = Pin(1, Pin.OUT)
 enable = PWM(Pin(2), frequency)
 
 # Set min and max duty cycle values
