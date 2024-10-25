@@ -51,6 +51,12 @@ tare()
 weight = get_units()
 
 # STEPPER WILL ROTATE HERE to BLUE cup
+# we rotate the stepper one direction to move from blue to red cup, as we dont know the number of rotations
+# I'm assuming one rotation = 360degree
+revolutions = 1
+delay_ms = 5
+
+rotate_stepper_360(revolutions, delay_ms)
 
 #---------------------
 
@@ -64,6 +70,9 @@ time.sleep(3)
 stop()
 
 # STEPPER WILL ROTATE HERE to RED cup
+# we will do the same as we did before but change the direction for which we call rotate_stepper_reverse function
+
+rotate_stepper_reverse(revolutions, delay_ms)
 
 #---------------------
 
