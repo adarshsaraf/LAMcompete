@@ -25,7 +25,7 @@ def set_step(p1, p2, p3, p4):
     pin3.value(p3)
     pin4.value(p4)
 
-# Rotate stepper motor 360 degrees
+# Rotate stepper motor 360 degrees clockwise
 def rotate_stepper_360(steps_per_revolution, delay_ms):
     for step in range(steps_per_revolution):
         # Calculate which step in the sequence to send
@@ -37,13 +37,14 @@ def rotate_stepper_360(steps_per_revolution, delay_ms):
         # Delay between steps
         time.sleep_ms(delay_ms)
 
+# Rotate stepper motor 360 degrees counterclockwise
 def rotate_stepper_reverse(steps_per_revolution, delay_ms):
     for step in range(steps_per_revolution):
-        # Calculate which step in the sequence to send
+        # Calculate which step in the reversed sequence to send
         current_step = step % len(full_step_sequence)
         
-        # Apply the current step to the motor
-        set_step(*full_step_sequence[-current_step - 1])
+        # Apply the current step to the motor in reverse order
+        set_step(*full_step_sequence[::-1][current_step])
         
         # Delay between steps
         time.sleep_ms(delay_ms)
@@ -54,7 +55,9 @@ delay_ms = 5
 # Rotate the motor 360 degrees
 while True:
     rotate_stepper_360(steps_per_revolution, delay_ms)
+    print("Stepper rotated anti-clockwise")
     rotate_stepper_reverse(steps_per_revolution, delay_ms)
+    print("Stepper rotated clockwise")
 
 # Turn off all pins after rotation
 set_step(0, 0, 0, 0)
