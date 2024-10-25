@@ -34,11 +34,12 @@ weight = get_units()
 open_tube(pwmRED)
 
 while (weight < 5):
-    forward(40)
+    forward(60)
     write_on_disp("WASHING MACHINE BROS. 2.0                                        WEIGHT: {:.2f} mg ".format(weight))
     show()
 
-backwards(40)
+backwards(60)
+time.sleep(3)
 stop()
 
 close_tube(pwmRED)
@@ -54,11 +55,12 @@ weight = get_units()
 #---------------------
 
 while (weight < 10):
-    forward(40)
+    forward(60)
     write_on_disp("WASHING MACHINE BROS. 2.0                                        WEIGHT: {:.2f} mg ".format(weight))
     show()
 
-backwards(40)
+backwards(60)
+time.sleep(3)
 stop()
 
 # STEPPER WILL ROTATE HERE to RED cup
