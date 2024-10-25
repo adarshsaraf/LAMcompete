@@ -5,8 +5,8 @@ import time
 # SETUP ALL PINS
 # -----------------------------------------------------------------
 # for load cell:
-clock = Pin(18, Pin.OUT)
-data = Pin(19, Pin.IN)
+clock_pin = Pin(18, Pin.OUT)
+data_pin = Pin(19, Pin.IN)
 
 # for pinch valves
 pwmRED = PWM(Pin(15, mode=Pin.OUT))
@@ -34,104 +34,54 @@ enable = PWM(Pin(2), frequency)
 #                      CODE FOR LOAD CELL
 # -----------------------------------------------------------------
 
-# HX711 configuration parameters
-GAIN = 1  # Gain set to 128
+# Initialize variables
+GAIN = 1  # Default gain setting
 OFFSET = 0
-SCALE = 1  # This will be set after calibration
+SCALE = 1
+TIME_CONSTANT = 0.25
+FILTERED = 0
 
-time_constant = 0.25
-filtered_value = 0
-
-def set_gain(gain):
-    global GAIN
-    if gain == 128:
-        GAIN = 1
-    elif gain == 64:
-        GAIN = 3
-    elif gain == 32:
-        GAIN = 2
-    read()  # Perform a read to set gain and stabilize the sensor
-
-def conversion_done_cb(data):
-    global conversion_done
-    conversion_done = True
-    data.irq(handler=None)
-
+# Function to read raw data from HX711
 def read():
-    global conversion_done
-    conversion_done = False
-    data.irq(trigger=Pin.IRQ_FALLING, handler=conversion_done_cb)
-    
-    # Wait for the sensor to be ready
+    data_pin.irq(trigger=Pin.IRQ_FALLING, handler=None)
+    # Wait until HX711 is ready
     for _ in range(500):
-        if conversion_done:
+        if data_pin.value() == 0:
             break
         time.sleep_ms(1)
     else:
-        data.irq(handler=None)
         raise OSError("Sensor does not respond")
-    
-    # Shift in data and gain/channel info
+
     result = 0
-    for j in range(24 + GAIN):
+    # Shift in data and gain & channel info
+    for _ in range(24 + GAIN):
         state = disable_irq()
-        clock.value(True)
-        clock.value(False)
+        clock_pin.value(True)
+        clock_pin.value(False)
         enable_irq(state)
-        result = (result << 1) | data()
-    
-    # Shift back extra bits
+        result = (result << 1) | data_pin.value()
+
+    # Shift back the extra bits
     result >>= GAIN
-    
-    # Check for negative value
-    if result > 0x7fffff:
+
+    # Check sign
+    if result > 0x7FFFFF:
         result -= 0x1000000
-    
+
     return result
 
-def read_average(times=3):
-    total = 0
-    for i in range(times):
-        total += read()
-    return total / times
+# Function to tare the scale
+def tare(times=100):
+    weights = []
 
-def read_lowpass():
-    global filtered_value
-    filtered_value += time_constant * (read() - filtered_value)
-    return filtered_value
+    for _ in range(times):  # measure weight 100 times
+        raw_wt = read() * 0.001
+        weight = raw_wt
+        weights.append(weight)
+        time.sleep(0.01)  # small delay between measurements
 
-def get_value():
-    return read_lowpass() - OFFSET
-
-def get_units():
-    return get_value() / SCALE
-
-def tare(times=15):
-    global OFFSET
-    OFFSET = read_average(times)
-
-def set_scale(scale):
-    global SCALE
-    SCALE = scale
-
-def set_offset(offset):
-    global OFFSET
-    OFFSET = offset
-
-def set_time_constant(tc=None):
-    global time_constant
-    if tc is None:
-        return time_constant
-    elif 0 < tc < 1.0:
-        time_constant = tc
-
-def power_down():
-    clock.value(False)
-    clock.value(True)
-
-def power_up():
-    clock.value(False)
-
+    avg_weight = sum(weights) / len(weights)  # calculate average
+    return avg_weight
 
 # -----------------------------------------------------------------
 #                 CODE FOR THE PINCH-VALVE SERVOS

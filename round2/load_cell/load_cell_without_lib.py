@@ -43,7 +43,8 @@ def read():
 
 # Function to tare the scale
 def tare(times=100):
-    
+    weights = []
+
     for _ in range(times):  # measure weight 100 times
         raw_wt = read() * 0.001
         weight = raw_wt
@@ -76,9 +77,9 @@ while True:
 
     for _ in range(10):  # measure weight 10 times
         raw_wt = read() * 0.001
-        weight = raw_wt * sf
+        weight = raw_wt 
         weights.append(weight)
         time.sleep(0.001)  # small delay between measurements
 
-    avg_weight = ((sum(weights) / len(weights)) - c) * (-0.51)  # calculate average
+    avg_weight = ((sum(weights) / len(weights)) - c) * (-0.517)  # calculate average
     print(f"Average Weight: {avg_weight:.2f} grams", end="    \r")

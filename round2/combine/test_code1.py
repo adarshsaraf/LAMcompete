@@ -7,28 +7,17 @@ init_display()
 clear_display()
 
 # CODE TO CALIBRATE THE LOAD CELL [ONLY ONE TIME]
-set_gain(128)  # Set the gain to 128 which gives highest precision
-tare()         # Tare the scale to set the current offset
+c = tare()         # Tare the scale to set the current offset
 
-# Assuming the load cell has a maximum capacity of 1 kg
-# Measure raw values with a known weight (calibration process)
-known_weight = 0.5  # 500 gm load cell
-raw_no_load = read_average(10)  # Average value with no load
-print("Raw value with no load: ", raw_no_load)
+weights = []  # list to store weights
 
-# Now place a known reference load on the load cell
-print("put load now:")
-time.sleep(5)  # Time to place the weight
-raw_with_load = read_average(10)  # Average value with reference load
-print("Raw value with 1 kg load: ", raw_with_load)
+for _ in range(10):  # measure weight 10 times
+    raw_wt = read() * 0.001
+    weights.append(raw_wt)
+    time.sleep(0.001)  # small delay between measurements
 
-# Calculate the scale factor for a 1 kg load cell
-scale_factor = (raw_with_load - raw_no_load) / known_weight
-print("Calculated scale factor: ", scale_factor)
-
-set_scale(scale_factor)  # Set the calculated scale factor
-
-weight = get_units()
+weight = ((sum(weights) / len(weights)) - c) * (-0.517)  # calculate average
+print(f"Average Weight: {weight:.2f} grams", end="    \r")
 
 # START FOR LOOP HERE FOR 5 CYCLES
 open_tube(pwmRED)
@@ -47,8 +36,17 @@ open_tube(pwmBLUE)
 
 total_weight += weight
 
-tare()
-weight = get_units()
+c = tare()
+
+weights = []  # list to store weights
+
+for _ in range(10):  # measure weight 10 times
+    raw_wt = read() * 0.001
+    weights.append(raw_wt)
+    time.sleep(0.001)  # small delay between measurements
+
+weight = ((sum(weights) / len(weights)) - c) * (-0.517)  # calculate average
+print(f"Average Weight: {weight:.2f} grams", end="    \r")
 
 # STEPPER WILL ROTATE HERE to BLUE cup
 # we rotate the stepper one direction to move from blue to red cup, as we dont know the number of rotations
@@ -78,7 +76,16 @@ rotate_stepper_reverse(revolutions, delay_ms)
 
 total_weight += weight
 
-tare()
-weight = get_units()
+c = tare()
+
+weights = []  # list to store weights
+
+for _ in range(10):  # measure weight 10 times
+    raw_wt = read() * 0.001
+    weights.append(raw_wt)
+    time.sleep(0.001)  # small delay between measurements
+
+weight = ((sum(weights) / len(weights)) - c) * (-0.517)  # calculate average
+print(f"Average Weight: {weight:.2f} grams", end="    \r")
 
 close_tube(pwmBLUE)
