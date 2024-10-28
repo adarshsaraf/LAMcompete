@@ -1,13 +1,15 @@
 from machine import Pin, PWM
 import time
 
+#Pins 15 & 16
+
 pwm = PWM(Pin(15, mode=Pin.OUT))
 
 pwm.freq(50)
 
 def close_tube():
     #center position
-    pwm.duty_u16(3276)
+    pwm.duty_u16(3280)
 
 def open_tube():
     #90 degree angle

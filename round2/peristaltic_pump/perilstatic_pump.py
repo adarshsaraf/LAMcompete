@@ -39,7 +39,7 @@ def stop():
     pin2.value(0)
 
 # Main code to run the motor
-try:
+'''try:
     print('Forward with speed: 10%')
     forward(10)
     sleep(5)
@@ -53,3 +53,8 @@ try:
 except KeyboardInterrupt:
     print('Keyboard Interrupt')
     stop()
+'''
+
+forward(100)
+sleep(20)
+stop()
