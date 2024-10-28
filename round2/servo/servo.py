@@ -3,7 +3,7 @@ import time
 
 #Pins 15 & 16
 
-pwm = PWM(Pin(15, mode=Pin.OUT))
+pwm = PWM(Pin(16, mode=Pin.OUT))
 
 pwm.freq(50)
 

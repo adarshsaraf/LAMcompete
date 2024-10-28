@@ -56,5 +56,5 @@ except KeyboardInterrupt:
 '''
 
 forward(100)
-sleep(20)
+sleep(12)
 stop()

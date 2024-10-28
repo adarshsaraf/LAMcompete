@@ -2,8 +2,10 @@ import machine
 from machine import enable_irq, disable_irq, idle, PWM, I2C, Pin
 import time
 
-# SETUP ALL PINS
 # -----------------------------------------------------------------
+#                    SETUP ALL PINS
+# -----------------------------------------------------------------
+
 # for load cell:
 clock_pin = Pin(18, Pin.OUT)
 data_pin = Pin(19, Pin.IN)
@@ -22,10 +24,7 @@ IN4 = machine.Pin(22, machine.Pin.OUT)
 i2c = I2C(0, scl=Pin(5), sda=Pin(4))  # I2C Default frequency of 400,000 Hz
 
 # for peristaltic pump
-
-# Define the frequency for PWM
 frequency = 1000
-
 pin1 = Pin(3, Pin.OUT)
 pin2 = Pin(1, Pin.OUT)
 enable = PWM(Pin(2), frequency)
@@ -35,7 +34,7 @@ enable = PWM(Pin(2), frequency)
 # -----------------------------------------------------------------
 
 # Initialize variables
-GAIN = 1  # Default gain setting
+GAIN = 1
 OFFSET = 0
 SCALE = 1
 TIME_CONSTANT = 0.25
@@ -43,7 +42,9 @@ FILTERED = 0
 
 # Function to read raw data from HX711
 def read():
+    # IRQ at falling edge
     data_pin.irq(trigger=Pin.IRQ_FALLING, handler=None)
+
     # Wait until HX711 is ready
     for _ in range(500):
         if data_pin.value() == 0:
@@ -53,7 +54,8 @@ def read():
         raise OSError("Sensor does not respond")
 
     result = 0
-    # Shift in data and gain & channel info
+
+    # Shift in data and gain
     for _ in range(24 + GAIN):
         state = disable_irq()
         clock_pin.value(True)
@@ -74,7 +76,7 @@ def read():
 def tare(times=100):
     weights = []
 
-    for _ in range(times):  # measure weight 100 times
+    for _ in range(times):  # measures weight 100 times by default 
         raw_wt = read() * 0.001
         weight = raw_wt
         weights.append(weight)
@@ -87,9 +89,11 @@ def tare(times=100):
 #                 CODE FOR THE PINCH-VALVE SERVOS
 # -----------------------------------------------------------------
 
+# Setting the frequency of PWM signal as per SG90 datasheet.
 pwmRED.freq(50)
 pwmBLUE.freq(50)
 
+# Defining functions to open and close the tubes with reservoir color as input
 def close_tube(pwm):
     #center position
     pwm.duty_u16(3276)
@@ -97,6 +101,7 @@ def close_tube(pwm):
 def open_tube(pwm):
     #90 degree angle
     pwm.duty_u16(6553)
+
 
 # -----------------------------------------------------------------
 #                 CODE FOR STEPPER FOR MOVING SPOUT
@@ -121,30 +126,28 @@ def set_step(p1, p2, p3, p4):
     IN3.value(p3)
     IN4.value(p4)
 
-# Rotate stepper motor forward
+# Function to move stepper in clockwise direction
 def rotate_stepper_360(revolutions, delay_ms = 5):
     for step in range(revolutions * steps_per_revolution):
-        # Calculate which step in the sequence to send
+
         current_step = step % len(full_step_sequence)
-        
-        # Apply the current step to the motor
         set_step(*full_step_sequence[current_step])
         
-        # Delay between steps
+        # Adding delay between steps
         time.sleep_ms(delay_ms)
+    # Stopping the stepper post movement
     set_step(0,0,0,0)
 
 # Rotate stepper motor in reverse
 def rotate_stepper_reverse(revolutions , delay_ms = 5):
     for step in range(revolutions * steps_per_revolution):
-        # Calculate which step in the sequence to send
-        current_step = step % len(full_step_sequence)
         
-        # Apply the current step to the motor
+        current_step = step % len(full_step_sequence)
         set_step(*full_step_sequence[-current_step - 1])
         
-        # Delay between steps
+        # Adding delay between steps
         time.sleep_ms(delay_ms)
+    # Stopping the stepper post movement
     set_step(0,0,0,0)
 
 # -----------------------------------------------------------------
@@ -188,26 +191,27 @@ def write_data(data):
     temp = bytearray([0x40, data]) 
     i2c.writeto(ADDR, temp)
 
-# Function to initialize the OLED
+# Initializing the OLED
 def init_display():
     cmds = [
-        SET_DISP | 0x00,  # Display off
-        SET_MEM_ADDR, 0x00,  # Horizontal addressing mode
-        SET_DISP_START_LINE | 0x00,
-        SET_SEG_REMAP | 0x01,  # Column address 127 mapped to SEG0
-        SET_MUX_RATIO, HEIGHT - 1,
-        SET_COM_OUT_DIR | 0x08,  # Scan from COM[N] to COM0
-        SET_DISP_OFFSET, 0x00,
-        SET_COM_PIN_CFG, 0x12,
-        SET_DISP_CLK_DIV, 0x80,
-        SET_PRECHARGE, 0xf1,
-        SET_VCOM_DESEL, 0x30,  # 0.83*Vcc
-        SET_CONTRAST, 0xff,  # Maximum contrast
-        SET_ENTIRE_ON,  # Output follows RAM contents
-        SET_NORM_INV,  # Not inverted
-        SET_CHARGE_PUMP, 0x14,  # Enable charge pump
-        SET_DISP | 0x01  # Display on
+        SET_DISP | 0x00,            # Display off, to start initialization
+        SET_MEM_ADDR, 0x00,         # Set memory addressing mode to horizontal
+        SET_DISP_START_LINE | 0x00, # Set display start line to 0
+        SET_SEG_REMAP | 0x01,       # Set segment re-map, columns are flipped
+        SET_MUX_RATIO, HEIGHT - 1,  # Set multiplex ratio to match the screen height
+        SET_COM_OUT_DIR | 0x08,     # Set COM output scan direction from COM[N] to COM0
+        SET_DISP_OFFSET, 0x00,      # Set display offset to 0
+        SET_COM_PIN_CFG, 0x12,      # Set COM pin configuration
+        SET_DISP_CLK_DIV, 0x80,     # Set display clock divide ratio and oscillator frequency
+        SET_PRECHARGE, 0xf1,        # Set pre-charge period
+        SET_VCOM_DESEL, 0x30,       # Set VCOMH deselect level to 0.83 * Vcc
+        SET_CONTRAST, 0xff,         # Set contrast to maximum value
+        SET_ENTIRE_ON,              # Entire display ON (output follows RAM contents)
+        SET_NORM_INV,               # Normal display (not inverted)
+        SET_CHARGE_PUMP, 0x14,      # Enable the charge pump regulator
+        SET_DISP | 0x01             # Turn display ON to show contents
     ]
+
     for cmd in cmds:
         write_cmd(cmd)
 
@@ -231,7 +235,7 @@ def set_pixel(x, y, color):
     else:
         buffer[index] &= ~(1 << bit)
 
-# Function to draw a character (simplified 5x8 font)
+# Function to draw a character in 5x8 format
 def draw_char(x, y, char):
     font = {
     'A': [0x7C, 0x12, 0x12, 0x12, 0x7C],
@@ -292,9 +296,8 @@ def draw_char(x, y, char):
             for j in range(8):
                 set_pixel(x + i, y + j, (byte >> j) & 1)
 
-# Function to write "Hello World" on the display
+# Function to display input text on OLED screen
 def write_on_disp(text):
-    #text = "WASHING MACHINE BROS. 2.0                                        WEIGHT:  5.0 gm "
     x_offset = 0
     for c in text:
         draw_char(x_offset, 0, c)

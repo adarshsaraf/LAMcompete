@@ -1,4 +1,4 @@
-from lib_total1 import *
+from Code_Lib import *
 
 total_weight = 0
 
@@ -18,12 +18,13 @@ weights = []  # list to store weights
 for _ in range(10):  # measure weight 10 times
     raw_wt = read() * 0.001
     weights.append(raw_wt)
-    time.sleep(0.001)  # small delay between measurements
+    time.sleep(0.001)  # delay between measurements
 
-weight = ((sum(weights) / len(weights)) - c) * (-0.517)  # calculate average
+# finding average weight
+weight = ((sum(weights) / len(weights)) - c) * (-0.517) 
 print(f"Average Weight: {weight:.2f} grams", end="    \r")
 
-# START FOR LOOP HERE FOR 5 CYCLES
+# START Executing task FOR 5 CYCLES
 for _ in range (5):
     
     open_tube(pwmRED)
@@ -32,7 +33,7 @@ for _ in range (5):
     time.sleep(3)
 
     while (weight < 4.8):
-        backwards(35)
+        backwards(60)
         for _ in range(10):  # measure weight 10 times
             raw_wt = read() * 0.001
             weights.append(raw_wt)
@@ -40,12 +41,12 @@ for _ in range (5):
         
         weight = ((sum(weights) / len(weights)) - c) * (-0.517)  # calculate average
 
-        write_on_disp("WASHING MACHINE BROS. 2.0                                        WEIGHT: {:.1f} mg     TOTAL WEIGHT: {:.1f} mg".format(weight, total_weight))
+        write_on_disp("WASHING MACHINE BROS. 2.0                                        WEIGHT: {:.1f} gm     TOTAL WEIGHT: {:.1f} gm".format(weight, total_weight))
         show()
 
     forward(100)
-    time.sleep(14)
-    forward(20)
+    time.sleep(20)
+    forward(60)
     time.sleep(2)
     stop()
 
@@ -54,7 +55,7 @@ for _ in range (5):
 
     total_weight += weight
 
-    time.sleep(4)
+    time.sleep(1)
 
     c = tare()
 
@@ -67,7 +68,7 @@ for _ in range (5):
 
     weight = ((sum(weights) / len(weights)) - c) * (-0.517)  # calculate average
     print(f"Average Weight: {weight:.2f} grams", end="    \r")
-    write_on_disp("WASHING MACHINE BROS. 2.0                                        WEIGHT: {:.1f} mg     TOTAL WEIGHT: {:.1f} mg".format(weight, total_weight))
+    write_on_disp("WASHING MACHINE BROS. 2.0                                        WEIGHT: {:.1f} gm     TOTAL WEIGHT: {:.1f} gm".format(weight, total_weight))
 
     # STEPPER WILL ROTATE HERE to BLUE cup
     # we rotate the stepper one direction to move from blue to red cup, as we dont know the number of rotations
@@ -81,8 +82,8 @@ for _ in range (5):
 
     backwards(100)
     time.sleep(3)
-    while (weight < 9.7):
-        backwards(35)
+    while (weight < 9.8):
+        backwards(30)
         for _ in range(10):  # measure weight 10 times
             raw_wt = read() * 0.001
             weights.append(raw_wt)
@@ -90,11 +91,11 @@ for _ in range (5):
         
         weight = ((sum(weights) / len(weights)) - c) * (-0.517)  # calculate average
 
-        write_on_disp("WASHING MACHINE BROS. 2.0                                        WEIGHT: {:.1f} mg     TOTAL WEIGHT: {:.1f} mg".format(weight, total_weight))
+        write_on_disp("WASHING MACHINE BROS. 2.0                                        WEIGHT: {:.1f} gm     TOTAL WEIGHT: {:.1f} gm".format(weight, total_weight))
         show()
 
     forward(100)
-    time.sleep(14)
+    time.sleep(20)
     forward(60)
     time.sleep(2)
     stop()
@@ -103,8 +104,6 @@ for _ in range (5):
     # we will do the same as we did before but change the direction for which we call rotate_stepper_reverse function
 
     rotate_stepper_reverse(revolutions, delay_ms)
-
-    #---------------------
 
     total_weight += weight
 
@@ -119,7 +118,7 @@ for _ in range (5):
 
     weight = ((sum(weights) / len(weights)) - c) * (-0.517)  # calculate average
     print(f"Average Weight: {weight:.2f} grams", end="    \r")
-    write_on_disp("WASHING MACHINE BROS. 2.0                                        WEIGHT: {:.1f} mg     TOTAL WEIGHT: {:.1f} mg".format(weight, total_weight))
+    write_on_disp("WASHING MACHINE BROS. 2.0                                        WEIGHT: {:.1f} gm     TOTAL WEIGHT: {:.1f} gm".format(weight, total_weight))
     close_tube(pwmBLUE)
 
 
