@@ -4,7 +4,7 @@ from Code_Lib import *
 #               CODE TO TEST WITHOUT MOVING STEPPER
 # ----------------------------------------------------------------------
 
-total_weight = 0
+'''total_weight = 0
 
 # Initialize display and clear it
 init_display()
@@ -71,4 +71,11 @@ forward(100)
 time.sleep(14)
 forward(60)
 time.sleep(2)
+stop()
+'''
+
+open_tube(pwmBLUE)
+close_tube(pwmRED)
+forward(100)
+time.sleep(8)
 stop()

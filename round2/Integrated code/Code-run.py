@@ -35,7 +35,7 @@ for _ in range (5):
     while (weight < 4.8):
 
         weights = []  # list to store weights
-        
+
         backwards(60)
         for _ in range(10):  # measure weight 10 times
             raw_wt = read() * 0.001
@@ -76,7 +76,7 @@ for _ in range (5):
     # STEPPER WILL ROTATE HERE to BLUE cup
     # we rotate the stepper one direction to move from blue to red cup, as we dont know the number of rotations
     # I'm assuming one rotation = 360degree
-    revolutions = 4
+    revolutions = 5
     delay_ms = 2
 
     rotate_stepper_360(revolutions, delay_ms)
@@ -125,5 +125,3 @@ for _ in range (5):
     print(f"Average Weight: {weight:.2f} grams", end="    \r")
     write_on_disp("WASHING MACHINE BROS. 2.0                                        WEIGHT: {:.1f} gm     TOTAL WEIGHT: {:.1f} gm".format(weight, total_weight))
     close_tube(pwmBLUE)
-
-
