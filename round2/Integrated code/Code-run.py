@@ -33,6 +33,9 @@ for _ in range (5):
     time.sleep(3)
 
     while (weight < 4.8):
+
+        weights = []  # list to store weights
+        
         backwards(60)
         for _ in range(10):  # measure weight 10 times
             raw_wt = read() * 0.001
@@ -55,7 +58,7 @@ for _ in range (5):
 
     total_weight += weight
 
-    time.sleep(1)
+    time.sleep_ms(300)
 
     c = tare()
 
@@ -74,7 +77,7 @@ for _ in range (5):
     # we rotate the stepper one direction to move from blue to red cup, as we dont know the number of rotations
     # I'm assuming one rotation = 360degree
     revolutions = 4
-    delay_ms = 5
+    delay_ms = 2
 
     rotate_stepper_360(revolutions, delay_ms)
 
@@ -83,6 +86,8 @@ for _ in range (5):
     backwards(100)
     time.sleep(3)
     while (weight < 9.8):
+        weights = []  # list to store weights
+
         backwards(30)
         for _ in range(10):  # measure weight 10 times
             raw_wt = read() * 0.001
