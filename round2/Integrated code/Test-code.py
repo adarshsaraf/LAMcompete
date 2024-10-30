@@ -74,8 +74,22 @@ time.sleep(2)
 stop()
 '''
 
+# ----------------------------------------------------------------------
+#                  Used to clear the pipes after use
+# ----------------------------------------------------------------------
+
+close_tube(pwmBLUE)
+open_tube(pwmRED)
+backwards(100)
+time.sleep(25)
+forward(100)
+time.sleep(30)
+
 open_tube(pwmBLUE)
 close_tube(pwmRED)
+backwards(100)
+time.sleep(25)
 forward(100)
-time.sleep(8)
+time.sleep(30)
+
 stop()

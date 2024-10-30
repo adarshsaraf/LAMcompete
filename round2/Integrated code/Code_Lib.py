@@ -73,7 +73,7 @@ def read():
     return result
 
 # Function to tare the scale
-def tare(times=100):
+def tare(times=50):
     weights = []
 
     for _ in range(times):  # measures weight 100 times by default 

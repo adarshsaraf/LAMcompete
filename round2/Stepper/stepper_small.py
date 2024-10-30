@@ -54,9 +54,10 @@ delay_ms = 2
 
 # Rotate the motor in clockwise & counter-clockwise direction
 
-#rotate_stepper_360(3*steps_per_revolution, delay_ms)
+#rotate_stepper_360(4*steps_per_revolution, delay_ms)
 #print("Stepper rotated anti-clockwise")
-rotate_stepper_reverse(2*steps_per_revolution, delay_ms)
+#time.sleep(2)
+rotate_stepper_reverse(4*steps_per_revolution, delay_ms)
 print("Stepper rotated clockwise")
 
 # Turn off all pins after rotation

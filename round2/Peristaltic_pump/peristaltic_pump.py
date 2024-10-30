@@ -55,6 +55,7 @@ except KeyboardInterrupt:
     stop()
 '''
 
+# Running for limited time
 forward(100)
 sleep(12)
 stop()

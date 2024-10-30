@@ -3,13 +3,14 @@ import time
 
 #Pins 15 & 16
 
-pwm = PWM(Pin(16, mode=Pin.OUT))
+pwm = PWM(Pin(15, mode=Pin.OUT))
 
 pwm.freq(50)
 
 def close_tube():
     #center position
-    pwm.duty_u16(3280)
+    pwm.duty_u16(3100)
+    #pwm.duty_u16(3276)
 
 def open_tube():
     #90 degree angle
@@ -18,9 +19,11 @@ def open_tube():
 
 open_tube()
 
-time.sleep_ms(3000)
+time.sleep(5)
 
 close_tube()
+
+# Testing servo motors at different PWM signals and positions
 '''while True:
     #time.sleep_ms(900)
 
